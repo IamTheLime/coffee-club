@@ -35,3 +35,5 @@ Liquid direction revised: remove pour and scroll coupling entirely. Continuous g
 Scroll response restored on request: visible cup accumulates bounded scroll energy, increasing wave amplitude up to 4.5× idle and speed up to 2.8×; energy decays smoothly after scrolling. No pour stream. Reduced motion disables response.
 
 Cup rotation now follows viewport-wide mouse position with frame-rate-independent easing. Leaving the browser or losing focus gently returns to neutral; touch and reduced motion do not rotate the cup.
+
+Refinement: retained selected Field Notes identity. Replaced exposed native roast control with a bean-labelled trigger and parallax tasting panel; custom bean-shaped range thumb and four labelled roast stops. Added faint drafting border, notebook margin and sparse translucent coffee rings outside reading surfaces. Included in first VPS deployment.
