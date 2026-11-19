@@ -117,3 +117,8 @@ html:has(.full-app){overflow-x:hidden;overscroll-behavior-x:none}
 
 .member-name{display:inline-flex;align-items:center;gap:6px;white-space:nowrap;vertical-align:middle}.member-name img{width:16px;height:16px;flex:none;image-rendering:pixelated;object-fit:contain}.member-roster{display:flex;align-items:center;gap:14px;flex-wrap:wrap}.full-app nav .member{display:flex;align-items:center;gap:5px}@media(max-width:900px){.member-roster{justify-content:center;gap:10px}}
 .eyebrow>.member-name{display:inline-flex;width:auto;height:auto;background:none}
+
+/* Detailed author portraits sit on the note corner, away from the text and edit action. */
+.coffee-entry .entry-meta{position:relative;min-height:74px;padding-right:76px;align-items:center;flex-wrap:wrap;gap:4px 10px}
+.author-head-sticker{position:absolute;right:-4px;bottom:0;width:64px;height:64px;object-fit:contain;pointer-events:none;image-rendering:pixelated;transform:rotate(var(--head-tilt,0deg));filter:drop-shadow(2px 3px 1px #29170c38)}
+@media(max-width:450px){.coffee-entry .entry-meta{padding-right:64px;min-height:62px}.author-head-sticker{width:56px;height:56px;right:-2px}}
