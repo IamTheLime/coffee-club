@@ -12,51 +12,69 @@ function Cup({dark=false,rust=false}){
  useEffect(()=>{
   let renderer;try{renderer=new THREE.WebGLRenderer({alpha:true,antialias:true,powerPreference:'low-power'});}catch{return;}
   const el=holder.current;el.appendChild(renderer.domElement);renderer.setPixelRatio(Math.min(devicePixelRatio,1.6));renderer.setClearColor(0,0);renderer.outputColorSpace=THREE.SRGBColorSpace;renderer.toneMapping=THREE.ACESFilmicToneMapping;renderer.toneMappingExposure=dark?1.4:1.15;
-  const scene=new THREE.Scene(),camera=new THREE.PerspectiveCamera(33,1,.1,50);camera.position.set(0,3.6,6);camera.lookAt(0,.55,0);
+  const scene=new THREE.Scene(),camera=new THREE.PerspectiveCamera(33,1,.1,50);camera.position.set(0,3.1,5);camera.lookAt(0,.65,0);
   const pmrem=new THREE.PMREMGenerator(renderer);const env=pmrem.fromScene(new RoomEnvironment(),.04);scene.environment=env.texture;
   const group=new THREE.Group();scene.add(group);group.rotation.set(.06,-.35,.13);
-  const ceramic=new THREE.MeshPhysicalMaterial({color:rust?0xc68b65:dark?0x35271e:0xf1e4c9,emissive:0xc97739,emissiveIntensity:.10,roughness:.22,metalness:.02,clearcoat:.9,clearcoatRoughness:.16});
-  const brass=new THREE.MeshStandardMaterial({color:0xb88b43,metalness:.8,roughness:.23});
-  const points=[[.39,0],[.43,.04],[.53,.14],[.66,.38],[.78,.76],[.81,.98],[.80,1.02],[.75,1.02],[.74,.96],[.69,.76],[.58,.42],[.46,.16],[.39,.13]].map(([x,y])=>new THREE.Vector2(x,y));
+  const ceramic=new THREE.MeshPhysicalMaterial({color:0xcabc9f,roughness:.52,metalness:0,clearcoat:.28,clearcoatRoughness:.35});
+  // Kiln-fired cream glaze breaks into charcoal with a granular transition.
+  ceramic.onBeforeCompile=shader=>{
+   shader.vertexShader='varying vec3 vStonePosition;\n'+shader.vertexShader;
+   shader.vertexShader=shader.vertexShader.replace('#include <begin_vertex>','#include <begin_vertex>\nvStonePosition=position;');
+   shader.fragmentShader='varying vec3 vStonePosition;\nfloat stoneNoise(vec3 p){return fract(sin(dot(p,vec3(127.1,311.7,74.7)))*43758.5453); }\n'+shader.fragmentShader;
+   shader.fragmentShader=shader.fragmentShader.replace('#include <color_fragment>',`#include <color_fragment>
+    float grain=stoneNoise(floor(vStonePosition*260.0));
+    float glaze=smoothstep(.29,.59,vStonePosition.y+(grain-.5)*.14);
+    vec3 stone=mix(vec3(.025,.032,.034),vec3(.60,.52,.39),glaze);
+    diffuseColor.rgb=stone*(.88+grain*.20);
+   `);
+  };
+  const darkGlaze=new THREE.MeshPhysicalMaterial({color:0x242729,roughness:.32,clearcoat:.55,clearcoatRoughness:.23});
+  const points=[[0,0],[.38,0],[.53,.06],[.65,.19],[.73,.42],[.775,.76],[.79,1.02],[.775,1.035],[.744,1.02],[.733,.76],[.69,.42],[.59,.21],[.36,.12],[0,.12]].map(([x,y])=>new THREE.Vector2(x,y));
   const cup=new THREE.Mesh(new THREE.LatheGeometry(points,96),ceramic);cup.position.y=.19;group.add(cup);
-  const saucer=new THREE.Mesh(new THREE.LatheGeometry([[0,0],[.4,0],[.5,.03],[.9,.06],[1.27,.13],[1.31,.17],[1.29,.20],[.9,.13],[.5,.12],[0,.12]].map(p=>new THREE.Vector2(...p)),96),ceramic);group.add(saucer);
-  const rim=new THREE.Mesh(new THREE.TorusGeometry(.783,.014,12,96),brass);rim.rotation.x=Math.PI/2;rim.position.y=1.21;group.add(rim);
-  // Open handle ends terminate inside the ceramic wall, below the coffee surface.
+  const rim=new THREE.Mesh(new THREE.TorusGeometry(.774,.009,10,96),darkGlaze);rim.rotation.x=Math.PI/2;rim.position.y=1.218;group.add(rim);
   const handleCurve=new THREE.CatmullRomCurve3([
-   new THREE.Vector3(.75,1.00,0),new THREE.Vector3(1.12,1.03,0),
-   new THREE.Vector3(1.29,.80,0),new THREE.Vector3(1.10,.49,0),new THREE.Vector3(.57,.45,0)
-  ]);
-  const handle=new THREE.Mesh(new THREE.TubeGeometry(handleCurve,48,.073,16,false),ceramic);group.add(handle);
+   new THREE.Vector3(.76,1.10,0),new THREE.Vector3(.96,1.17,0),
+   new THREE.Vector3(1.15,1.10,0),new THREE.Vector3(1.19,.89,0),
+   new THREE.Vector3(1.10,.68,0),new THREE.Vector3(.63,.45,0)
+  ],false,'centripetal');
+  const handle=new THREE.Mesh(new THREE.TubeGeometry(handleCurve,64,.053,16,false),darkGlaze);group.add(handle);
   // Dense polar surface: waves change the actual liquid geometry and reflections.
   const liquidGeometry=new THREE.RingGeometry(.001,.734,96,28);
   liquidGeometry.rotateX(-Math.PI/2);
-  const liquidMaterial=new THREE.MeshPhysicalMaterial({color:0x492714,roughness:.24,metalness:0,clearcoat:1,clearcoatRoughness:.12});
-  const coffee=new THREE.Mesh(liquidGeometry,liquidMaterial);coffee.position.y=1.16;group.add(coffee);
+  const liquidMaterial=new THREE.MeshPhysicalMaterial({color:0x211d19,roughness:.26,metalness:0,clearcoat:.3,clearcoatRoughness:.2,envMapIntensity:.07,specularIntensity:.2});
+  const coffee=new THREE.Mesh(liquidGeometry,liquidMaterial);coffee.position.y=1.14;group.add(coffee);
   const liquidPositions=liquidGeometry.attributes.position;
+  const baseLiquid=Float32Array.from(liquidPositions.array);
   const liquidNoise=new ImprovedNoise(),noiseOffset=Math.random()*1000;
+  let sloshX=0,sloshZ=0,velocityX=0,velocityZ=0;
+  const edgePoints=new Float32Array(96*3),edgeGeometry=new THREE.BufferGeometry();edgeGeometry.setAttribute('position',new THREE.BufferAttribute(edgePoints,3));
+  const crema=new THREE.LineLoop(edgeGeometry,new THREE.LineBasicMaterial({color:0x9b6a39,transparent:true,opacity:.45}));crema.position.y=1.14;group.add(crema);
+  const surface=(x,z,time,energy)=>{
+   const r=Math.hypot(x,z)/.734;
+   const drift=liquidNoise.noise(x*2.2+noiseOffset,z*2.2,time*.18);
+   const swell=Math.sin(x*5+z*2-time*1.7)*.007+Math.sin(z*6-x*2+time*1.3)*.004;
+   // The wave reaches the wall, rises nearly to the lip, then settles back.
+   return .066*Math.tanh((x*sloshX+z*sloshZ+(swell+drift*.003)*energy*(.45+.55*r))/.066);
+  };
   const updateLiquid=(time,energy)=>{
    for(let i=0;i<liquidPositions.count;i++){
-    const x=liquidPositions.getX(i),z=liquidPositions.getZ(i),r=Math.hypot(x,z);
-    const edge=Math.pow(Math.max(0,1-(r/.734)**2),1.2);
-    // Coherent noise drifts continuously: no frame-to-frame random jitter.
-    const drift=liquidNoise.noise(x*2.2+noiseOffset,z*2.2,time*.13);
-    const detail=liquidNoise.noise(x*6.5+noiseOffset,z*6.5,time*.19);
-    const swell=Math.sin(x*4.2+z*2.1-time*.65+drift*.65)*.004;
-    const cross=Math.sin(z*5-x*1.7+time*.43)*.002;
-    liquidPositions.setY(i,(swell+cross+drift*.004+detail*.0012)*edge*energy);
+    const x=baseLiquid[i*3],z=baseLiquid[i*3+2],height=surface(x,z,time,energy);
+    // Follow the tapered inner wall as the contact line rises and falls.
+    const radius=(.740+height*.06)/.734;
+    liquidPositions.setXYZ(i,x*radius,height,z*radius);
    }
    liquidPositions.needsUpdate=true;liquidGeometry.computeVertexNormals();
+   for(let i=0;i<96;i++){const angle=i/96*Math.PI*2,x=Math.cos(angle)*.734,z=Math.sin(angle)*.734,h=surface(x,z,time,energy),r=.740+h*.06;edgePoints[i*3]=Math.cos(angle)*r;edgePoints[i*3+1]=h+.001;edgePoints[i*3+2]=Math.sin(angle)*r;}
+   edgeGeometry.attributes.position.needsUpdate=true;
   };
-  const crema=new THREE.Mesh(new THREE.TorusGeometry(.719,.009,10,96),new THREE.MeshStandardMaterial({color:0x997044,roughness:.65,transparent:true,opacity:.6}));crema.rotation.x=Math.PI/2;crema.position.y=1.163;group.add(crema);
-  const spoon=new THREE.Group();const stick=new THREE.Mesh(new THREE.CapsuleGeometry(.025,.78,6,16),brass);stick.rotation.z=Math.PI/2;spoon.add(stick);const bowl=new THREE.Mesh(new THREE.SphereGeometry(.13,24,16),brass);bowl.scale.set(1.5,.18,1);bowl.position.x=-.49;spoon.add(bowl);spoon.position.set(.5,.2,.68);spoon.rotation.y=-.4;group.add(spoon);
   const resize=()=>{const{width,height}=el.getBoundingClientRect();renderer.setSize(width,height);camera.aspect=width/height;camera.updateProjectionMatrix();};resize();const ro=new ResizeObserver(resize);ro.observe(el);
   const motion=matchMedia('(prefers-reduced-motion: reduce)');let frame,pointer=0,pointerTarget=0,lastTime=0,phase=0,scrollEnergy=0,lastScroll=window.scrollY;
   const move=e=>{if(!motion.matches&&e.pointerType==='mouse')pointerTarget=(Math.max(0,Math.min(1,e.clientX/window.innerWidth))-.5)*1.1;};
   const leave=()=>{pointerTarget=0;};
   const scroll=()=>{
-   const distance=Math.abs(window.scrollY-lastScroll);lastScroll=window.scrollY;
+   const delta=window.scrollY-lastScroll,distance=Math.abs(delta);lastScroll=window.scrollY;
    const bounds=el.getBoundingClientRect();
-   if(!motion.matches&&bounds.bottom>0&&bounds.top<innerHeight)scrollEnergy=Math.min(1,scrollEnergy+distance/180);
+   if(!motion.matches&&bounds.bottom>0&&bounds.top<innerHeight){scrollEnergy=Math.min(1,scrollEnergy+distance/180);velocityZ+=Math.max(-.6,Math.min(.6,delta*.006));}
   };
   window.addEventListener('pointermove',move,{passive:true});
   document.documentElement.addEventListener('pointerleave',leave);
@@ -65,14 +83,22 @@ function Cup({dark=false,rust=false}){
   const render=t=>{
    const dt=Math.min((t-lastTime)/1000,.05);lastTime=t;
    const visible=el.getBoundingClientRect().bottom>0&&el.getBoundingClientRect().top<innerHeight;
-   if(!motion.matches&&visible&&!document.hidden){pointer+=(pointerTarget-pointer)*(1-Math.exp(-dt*4));scrollEnergy*=Math.exp(-dt*1.15);phase+=dt*(1+scrollEnergy*1.8);updateLiquid(phase,1+scrollEnergy*3.5);group.position.y=Math.sin(phase*.4)*.012;group.rotation.y=-.35+pointer;}
-   else if(motion.matches){pointer=0;pointerTarget=0;scrollEnergy=0;updateLiquid(0,0);group.position.y=0;group.rotation.y=-.35;}
+   if(!motion.matches&&visible&&!document.hidden){
+    const change=(pointerTarget-pointer)*(1-Math.exp(-dt*4));pointer+=change;
+    velocityX-=change*5;
+    velocityX+=(-sloshX*22-velocityX*2.8)*dt;velocityZ+=(-sloshZ*19-velocityZ*2.5)*dt;
+    sloshX=Math.max(-.22,Math.min(.22,sloshX+velocityX*dt));sloshZ=Math.max(-.22,Math.min(.22,sloshZ+velocityZ*dt));
+    scrollEnergy*=Math.exp(-dt*1.4);phase+=dt;
+    updateLiquid(phase,1+scrollEnergy*2);
+    group.position.y=Math.sin(phase*.4)*.012;group.rotation.set(.06+sloshZ*.24,-.35+pointer,.13-sloshX*.2);
+   }
+   else if(motion.matches){pointer=0;pointerTarget=0;scrollEnergy=0;sloshX=sloshZ=velocityX=velocityZ=0;updateLiquid(0,0);group.position.y=0;group.rotation.set(.06,-.35,.13);}
    if(visible&&!document.hidden)renderer.render(scene,camera);
    frame=requestAnimationFrame(render);
   };frame=requestAnimationFrame(render);
   return()=>{cancelAnimationFrame(frame);ro.disconnect();window.removeEventListener('pointermove',move);document.documentElement.removeEventListener('pointerleave',leave);window.removeEventListener('blur',leave);window.removeEventListener('scroll',scroll);const materials=new Set();scene.traverse(o=>{o.geometry?.dispose();if(o.material)materials.add(o.material);});materials.forEach(m=>m.dispose());env.dispose();pmrem.dispose();renderer.dispose();renderer.domElement.remove();};
  },[dark,rust]);
- return <div className="cup-stage" ref={holder} role="img" aria-label="Glazed espresso cup with gentle, irregular ocean-like movement on the coffee surface"><span className="cup-shadow"/></div>;
+ return <div className="cup-stage" ref={holder} role="img" aria-label="Cream and charcoal stoneware mug with dark coffee that sloshes toward the rim as the cup moves"><span className="cup-shadow"/></div>;
 }
 function PourCard({children,enabled,organic=false}){
  const resting=useRef(null);if(resting.current===null)resting.current={angle:(Math.random()-.5)*5,offset:(Math.random()-.5)*12};
