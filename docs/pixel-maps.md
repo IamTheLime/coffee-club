@@ -1,13 +1,13 @@
-# Local map prototype
+# Server-cached café maps
 
-OpenFreeMap vector tiles, snapshot 20261115_080022_pt, zoom 14. Data © OpenStreetMap contributors, schema © OpenMapTiles. Attribution is visible below each map. Geometry is a derived OSM data extract, under ODbL: https://www.openstreetmap.org/copyright . Keep this notice when distributing the extract.
+Authenticated GET /api/cafes/:id/map generates a missing preview on demand. Concurrent requests for one café share a job; all provider work is serialized in this single-process deployment. Ready geometry persists in cafe_maps in the existing encrypted SQLite database. No scheduled scans or refreshes run. Browsers only contact our own server.
 
-Verified with Nominatim address results:
-- Rosslyn, 78 Queen Victoria Street: 51.5125832, -0.0934321.
-- Arôme Bakery, 9 Mercer Street: 51.5129927, -0.1261416.
+Locations use Nominatim, with an identifying User-Agent and at least 1.1 seconds between lookups. Name/address queries are cached for 30 days across cafés. Only a single exact-name café/bakery/restaurant result with a supplied address is selected automatically. Other results require a member to select a candidate using authenticated, origin-checked POST /api/cafes/:id/map. Arbitrary URLs and coordinates are not accepted by that endpoint. No matching result retains the Google Maps fallback. Provider failures back off for an hour and preserve resolved coordinates. Opening the journal again retries after the backoff. Missing-result entries are reconsidered after a day using the shared lookup cache.
 
-Canal No 5 and The Roasting Shed still use ordinary Google Maps links; do not substitute approximate geocoding matches for exact café positions.
+The app sends public café names and addresses, not review text, photos, or user identities. Provider URLs can be changed through MAP_GEOCODER_URL and MAP_TILE_SOURCE_URL without a code update. Respect https://operations.osmfoundation.org/policies/nominatim/ : single instance, maximum 1 request/second, no autocomplete, no systematic/bulk scanning. Do not run multiple replicas without a shared provider rate limiter.
 
-Map previews use Canvas 2D at 320 × 196, redrawn on roast changes only. No additional WebGL renderer, animation loop, third-party browser requests, or runtime dependencies. Café geometry is currently bundled with the app. This is a local design prototype, not a deployed generic map service for newly added cafés.
+OpenFreeMap tiles are fetched sequentially (at most six per preview and 24 MB total), decoded and clipped on the server. Requests have identifying headers, size limits, timeouts, and no redirects. Tile URLs must share the configured metadata source origin. https://openfreemap.org/tos/ allows small offline downloads; the service is free with no uptime guarantee.
 
-Provider terms: https://openfreemap.org/tos/ . Offline downloads must stay within 3,000 tiles or 50 MB, at most four simultaneous requests, with an identifying User-Agent. This prototype fetched a few tiles sequentially. Service is free without uptime guarantees. Standard OSM raster tiles have different rules; do not replace the source with tile.openstreetmap.org for bulk/offline downloads.
+Data © OpenStreetMap contributors, under ODbL: https://www.openstreetmap.org/copyright . Schema © OpenMapTiles. Keep attribution and this licence notice when distributing extracts. Existing Rosslyn and Arôme geometry is seeded from the 20261115_080022_pt OpenFreeMap snapshot; new maps use the current provider snapshot.
+
+The client renders Canvas 2D at 320 × 196 and the approved 1.6× zoom, redrawing only when data or roast theme changes. No added WebGL renderer or animation loop. The VPS service needs outbound internet access; its private database and file isolation remain in force.

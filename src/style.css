@@ -112,3 +112,5 @@ html:has(.full-app){overflow-x:hidden;overscroll-behavior-x:none}
 .pixel-map-caption svg{flex:none;align-self:center;color:var(--ink)}
 .pixel-map figcaption{font-size:10px;line-height:1.6;text-align:right;margin-top:5px;color:var(--muted)}
 .pixel-map figcaption a{color:inherit}
+
+.map-placeholder{padding:1rem 0;color:var(--muted);font-size:13px}.map-choices{display:grid;gap:.5rem;margin-bottom:1rem}.map-choices button{text-align:left;white-space:normal;overflow-wrap:anywhere;border:1px solid var(--line);padding:.65rem;color:var(--ink)}

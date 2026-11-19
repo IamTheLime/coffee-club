@@ -4,6 +4,7 @@ import { randomBytes, scryptSync, timingSafeEqual, createHash } from 'node:crypt
 import { mkdirSync, readFileSync, existsSync, statSync } from 'node:fs';
 import { resolve, dirname, extname, sep } from 'node:path';
 import sharp from 'sharp';
+import {createMapCache} from './map-cache.mjs';
 
 export const PEOPLE = ['Tiago','Sam','Archie'];
 export function hashPassword(password) {
@@ -41,7 +42,7 @@ async function photo(data){
  if(bytes.length>6_000_000)throw error(413,'Photo must be under 6 MB.');
  try{return await sharp(bytes,{limitInputPixels:24_000_000,animated:false}).rotate().resize({width:1600,height:1600,fit:'inside',withoutEnlargement:true}).jpeg({quality:82}).toBuffer();}catch{throw error(400,'That photo could not be read.');}
 }
-export function createApp({databasePath,passwordHash,origin,secureCookies=true,staticDirectory=null,seed=null}){
+export function createApp({databasePath,passwordHash,origin,secureCookies=true,staticDirectory=null,seed=null,mapOptions}){
  if(!/^[a-f0-9]{32}:[a-f0-9]{128}$/.test(passwordHash||''))throw new Error('A valid PASSWORD_HASH must be configured.');
  const appOrigin=new URL(origin).origin;
  mkdirSync(dirname(resolve(databasePath)),{recursive:true,mode:0o700});
@@ -59,6 +60,7 @@ export function createApp({databasePath,passwordHash,origin,secureCookies=true,s
    }db.prepare('INSERT INTO imports VALUES(?)').run('coffee-list-v1');db.exec('COMMIT');
   }catch(e){db.exec('ROLLBACK');throw e;}
  }
+ const mapCache=createMapCache(db,mapOptions);
  const attempts=new Map();let loginBusy=false;
  const server=http.createServer(async(req,res)=>{
   res.setHeader('X-Robots-Tag','noindex, nofollow, noarchive');res.setHeader('X-Content-Type-Options','nosniff');res.setHeader('Referrer-Policy','no-referrer');res.setHeader('Cache-Control','no-store');
@@ -94,6 +96,11 @@ export function createApp({databasePath,passwordHash,origin,secureCookies=true,s
      const cafes=db.prepare('SELECT * FROM cafes ORDER BY name COLLATE NOCASE').all();
      const reviews=db.prepare('SELECT id,cafe_id,author,coffee,score,notes,milk,visited_on,date_text,created_at,updated_at,photo IS NOT NULL AS has_photo FROM reviews ORDER BY created_at DESC,id DESC').all();
      return send(200,{cafes,reviews});
+    }
+    const mapMatch=path.match(/^\/api\/cafes\/([a-zA-Z0-9_-]+)\/map$/);
+    if(mapMatch&&['GET','POST'].includes(req.method)){
+     const cafe=db.prepare('SELECT * FROM cafes WHERE id=?').get(mapMatch[1]);if(!cafe)throw error(404,'Café not found.');
+     return send(200,req.method==='GET'?await mapCache.get(cafe):await mapCache.choose(cafe,(await body(req)).locationId));
     }
     const photoMatch=path.match(/^\/api\/photos\/([a-zA-Z0-9_-]+)$/);
     if(photoMatch&&req.method==='GET'){
@@ -139,5 +146,5 @@ export function createApp({databasePath,passwordHash,origin,secureCookies=true,s
   }catch(e){send(e.status||500,{error:e.status?e.message:'Something went wrong. Please try again.'});}
  });
  server.requestTimeout=30_000;server.headersTimeout=15_000;
- return {server,db,close:()=>new Promise(resolveClose=>server.close(()=>{db.close();resolveClose();}))};
+ return {server,db,close:()=>new Promise(resolveClose=>server.close(async()=>{await mapCache.idle();db.close();resolveClose();}))};
 }

@@ -54,3 +54,6 @@ Rating refinement: native slider in 0.5-point increments from 1–10 progressive
 
 ### Local pixel map prototype
 Static OpenFreeMap/OpenMapTiles geometry for verified Rosslyn and Arôme locations, themed canvas rendering without WebGL or idle animation. Attribution retained; Google Maps click-through. Other cafés retain their existing link until coordinates are verified. Local-only prototype, not deployed.
+
+### Server-cached map release
+Missing maps resolve on journal load and persist in encrypted SQLite. Ambiguous branches present location choices; unresolved cafés keep the Maps link. Preserve the approved 1.6× zoom, map icon, palette and static canvas performance.

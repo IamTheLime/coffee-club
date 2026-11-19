@@ -18,6 +18,7 @@ async function fixture(t){
 test('should require authentication for reviews and photos and block cross-origin writes',async t=>{
  const{call}=await fixture(t);
  assert.equal((await call('/api/journal')).status,401);
+ assert.equal((await call('/api/cafes/rosslyn/map')).status,401);
  assert.equal((await call('/api/photos/import-rosslyn-Tiago')).status,401);
  assert.equal((await call('/api/login',{method:'POST',requestOrigin:'https://evil.example',data:{name:'Tiago',password}})).status,403);
  const robots=await call('/robots.txt');assert.match(await robots.text(),/Disallow: \//);assert.match(robots.headers.get('x-robots-tag'),/noindex/);
@@ -51,4 +52,11 @@ test('should revoke access on logout and throttle failed password guesses',async
  const{call,login}=await fixture(t);const cookie=await login();assert.equal((await call('/api/logout',{method:'POST',cookie,data:{}})).status,200);assert.equal((await call('/api/journal',{cookie})).status,401);
  for(let i=0;i<10;i++)assert.equal((await call('/api/login',{method:'POST',data:{name:'Tiago',password:'wrong'}})).status,401);
  assert.equal((await call('/api/login',{method:'POST',data:{name:'Tiago',password}})).status,429);
+});
+
+test('should serve seeded maps only to members and protect map writes',async t=>{
+ const{call,login}=await fixture(t);const cookie=await login();const r=await call('/api/cafes/rosslyn/map',{cookie});assert.equal(r.status,200);assert.equal((await r.json()).status,'ready');
+ assert.equal((await call('/api/cafes/rosslyn/map',{cookie,method:'POST',requestOrigin:'https://evil.example',data:{locationId:'x'}})).status,403);
+ assert.equal((await call('/api/cafes/rosslyn/map',{cookie,method:'POST',data:{locationId:'x'}})).status,400);
+ assert.equal((await call('/api/cafes/unknown/map',{cookie})).status,404);
 });
