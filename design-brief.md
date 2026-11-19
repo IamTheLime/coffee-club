@@ -51,3 +51,6 @@ Latest decisions: return cat to simplified 16-bit style, with visible nose and r
 Cat palette refinement via built-in image edit: recolour only to dusty terracotta #a97459, taupe #ad9277, parchment #e7ddc8, espresso outline #574337 and walnut ledge #83644e. Preserve pose, pixel grid, nose, silhouette, transparent background and banner wording. Reduce saturation so the emblem sits within Field Notes rather than competing with it.
 
 Rating refinement: native slider in 0.5-point increments from 1–10 progressively fills five beans. Live self-deprecating verdicts replace endpoint explanations; 8.5 = “Might write a poem about it”. API validates half-point increments; persistence test includes 8.5 and rejects 8.25. Cat image edit preserves muted palette and banner, adds open mouth, dangling front leg and stronger existential stare, removes extra neck paw; exactly four legs.
+
+### Local pixel map prototype
+Static OpenFreeMap/OpenMapTiles geometry for verified Rosslyn and Arôme locations, themed canvas rendering without WebGL or idle animation. Attribution retained; Google Maps click-through. Other cafés retain their existing link until coordinates are verified. Local-only prototype, not deployed.
