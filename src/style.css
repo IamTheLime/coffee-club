@@ -92,3 +92,6 @@ html:has(.full-app){overflow-x:hidden;overscroll-behavior-x:none}
 
 .mobile-bean-indicator{pointer-events:none!important;width:18px;right:2px;opacity:.8}.mobile-bean-indicator .bean-scroll-thumb{scale:.64}.mobile-bean-indicator .bean-scroll-line{opacity:.45}.dialog-scrollbar.mobile-bean-indicator{width:14px}.dialog-scrollbar.mobile-bean-indicator .bean-scroll-thumb{scale:.52}
 @media(hover:none) and (prefers-reduced-motion:no-preference){.review-sticker-art{transform:translate(calc(var(--pattern-x,0px)*.65),calc(var(--pattern-y,0px)*.65)) rotate(var(--sticker-angle))}.review-sticker-shadow{transform:translate(calc(3px - var(--pattern-x,0px)*.35),calc(6px - var(--pattern-y,0px)*.35)) rotate(var(--sticker-angle))}}
+
+/* Emergency mobile rollback: no touch-driven transforms or WebGL scroll indicator. */
+@media(hover:none),(pointer:coarse){.bean-scrollbar{display:none!important}.full-app .pour-card,.full-app .pour-content,.full-app .review-sticker img{transition:none!important}.full-app .pour-card{transform:rotate(var(--rest-tilt,0deg))!important}.full-app .review-sticker-art{transform:rotate(var(--sticker-angle))}.full-app .review-sticker-shadow{transform:translate(3px,6px) rotate(var(--sticker-angle))}.full-app .people-grid .pour-content,.full-app .roast-panel .pour-content{backdrop-filter:none;-webkit-backdrop-filter:none}}

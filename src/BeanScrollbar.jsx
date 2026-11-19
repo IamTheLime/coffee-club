@@ -24,7 +24,7 @@ export default function BeanScrollbar({dialog=false}){
   const media=matchMedia('(hover: hover) and (pointer: fine)');
   const el=dialog?rail.current.closest('dialog'):document.documentElement;target.current=el;
   const source=dialog?el:window;
-  const update=()=>{const max=el.scrollHeight-el.clientHeight;const rect=el.getBoundingClientRect();setState({progress:max>0?el.scrollTop/max:0,visible:max>1,interactive:media.matches,style:dialog?{top:rect.top+18,right:innerWidth-rect.right+1,height:Math.max(0,rect.height-36)}:{}});el.classList.toggle('bean-scroll-ready',media.matches&&max>1);};
+  const update=()=>{const max=el.scrollHeight-el.clientHeight;const rect=el.getBoundingClientRect();setState({progress:max>0?el.scrollTop/max:0,visible:media.matches&&max>1,interactive:media.matches,style:dialog?{top:rect.top+18,right:innerWidth-rect.right+1,height:Math.max(0,rect.height-36)}:{}});el.classList.toggle('bean-scroll-ready',media.matches&&max>1);};
   const observer=new ResizeObserver(update);observer.observe(el);if(dialog&&el.querySelector('form'))observer.observe(el.querySelector('form'));if(!dialog&&document.querySelector('#root'))observer.observe(document.querySelector('#root'));
   source.addEventListener('scroll',update,{passive:true});window.addEventListener('resize',update);media.addEventListener('change',update);update();
   return()=>{observer.disconnect();source.removeEventListener('scroll',update);window.removeEventListener('resize',update);media.removeEventListener('change',update);el.classList.remove('bean-scroll-ready');};
