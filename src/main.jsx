@@ -12,36 +12,42 @@ function Cup({dark=false,rust=false}){
  useEffect(()=>{
   let renderer;try{renderer=new THREE.WebGLRenderer({alpha:true,antialias:true,powerPreference:'low-power'});}catch{return;}
   const el=holder.current;el.appendChild(renderer.domElement);renderer.setPixelRatio(Math.min(devicePixelRatio,1.6));renderer.setClearColor(0,0);renderer.outputColorSpace=THREE.SRGBColorSpace;renderer.toneMapping=THREE.ACESFilmicToneMapping;renderer.toneMappingExposure=dark?1.4:1.15;
-  const scene=new THREE.Scene(),camera=new THREE.PerspectiveCamera(33,1,.1,50);camera.position.set(0,3.1,5);camera.lookAt(0,.65,0);
+  const scene=new THREE.Scene(),camera=new THREE.PerspectiveCamera(33,1,.1,50);camera.position.set(0,3.6,6);camera.lookAt(0,.55,0);
   const pmrem=new THREE.PMREMGenerator(renderer);const env=pmrem.fromScene(new RoomEnvironment(),.04);scene.environment=env.texture;
   const group=new THREE.Group();scene.add(group);group.rotation.set(.06,-.35,.13);
-  const ceramic=new THREE.MeshPhysicalMaterial({color:0xcabc9f,roughness:.52,metalness:0,clearcoat:.28,clearcoatRoughness:.35});
-  // Kiln-fired cream glaze breaks into charcoal with a granular transition.
-  ceramic.onBeforeCompile=shader=>{
-   shader.vertexShader='varying vec3 vStonePosition;\n'+shader.vertexShader;
-   shader.vertexShader=shader.vertexShader.replace('#include <begin_vertex>','#include <begin_vertex>\nvStonePosition=position;');
-   shader.fragmentShader='varying vec3 vStonePosition;\nfloat stoneNoise(vec3 p){return fract(sin(dot(p,vec3(127.1,311.7,74.7)))*43758.5453); }\n'+shader.fragmentShader;
-   shader.fragmentShader=shader.fragmentShader.replace('#include <color_fragment>',`#include <color_fragment>
-    float grain=stoneNoise(floor(vStonePosition*260.0));
-    float glaze=smoothstep(.29,.59,vStonePosition.y+(grain-.5)*.14);
-    vec3 stone=mix(vec3(.025,.032,.034),vec3(.60,.52,.39),glaze);
-    diffuseColor.rgb=stone*(.88+grain*.20);
-   `);
-  };
-  const darkGlaze=new THREE.MeshPhysicalMaterial({color:0x242729,roughness:.32,clearcoat:.55,clearcoatRoughness:.23});
+  const ceramic=new THREE.MeshPhysicalMaterial({color:rust?0xc68b65:dark?0x35271e:0xf1e4c9,emissive:0xc97739,emissiveIntensity:.08,roughness:.26,metalness:.02,clearcoat:.7,clearcoatRoughness:.2});
+  const brass=new THREE.MeshStandardMaterial({color:0xb88b43,metalness:.8,roughness:.23});
   const points=[[0,0],[.38,0],[.53,.06],[.65,.19],[.73,.42],[.775,.76],[.79,1.02],[.775,1.035],[.744,1.02],[.733,.76],[.69,.42],[.59,.21],[.36,.12],[0,.12]].map(([x,y])=>new THREE.Vector2(x,y));
   const cup=new THREE.Mesh(new THREE.LatheGeometry(points,96),ceramic);cup.position.y=.19;group.add(cup);
-  const rim=new THREE.Mesh(new THREE.TorusGeometry(.774,.009,10,96),darkGlaze);rim.rotation.x=Math.PI/2;rim.position.y=1.218;group.add(rim);
+  const rim=new THREE.Mesh(new THREE.TorusGeometry(.774,.009,10,96),brass);rim.rotation.x=Math.PI/2;rim.position.y=1.218;group.add(rim);
   const handleCurve=new THREE.CatmullRomCurve3([
    new THREE.Vector3(.76,1.10,0),new THREE.Vector3(.96,1.17,0),
    new THREE.Vector3(1.15,1.10,0),new THREE.Vector3(1.19,.89,0),
    new THREE.Vector3(1.10,.68,0),new THREE.Vector3(.63,.45,0)
   ],false,'centripetal');
-  const handle=new THREE.Mesh(new THREE.TubeGeometry(handleCurve,64,.053,16,false),darkGlaze);group.add(handle);
+  const handle=new THREE.Mesh(new THREE.TubeGeometry(handleCurve,64,.053,16,false),ceramic);group.add(handle);
+  const saucer=new THREE.Mesh(new THREE.LatheGeometry([[0,0],[.4,0],[.5,.03],[.9,.06],[1.27,.13],[1.31,.17],[1.29,.20],[.9,.13],[.5,.12],[0,.12]].map(p=>new THREE.Vector2(...p)),96),ceramic);group.add(saucer);
+  // Amber light catches changing surface normals and warms the inner glaze.
+  const cupLight=new THREE.PointLight(0xffb866,.65,1.8,2);cupLight.position.set(-.36,1.52,.18);group.add(cupLight);
   // Dense polar surface: waves change the actual liquid geometry and reflections.
   const liquidGeometry=new THREE.RingGeometry(.001,.734,96,28);
   liquidGeometry.rotateX(-Math.PI/2);
   const liquidMaterial=new THREE.MeshPhysicalMaterial({color:0x211d19,roughness:.26,metalness:0,clearcoat:.3,clearcoatRoughness:.2,envMapIntensity:.07,specularIntensity:.2});
+  const liquidGlow={time:{value:0},energy:{value:0}};
+  liquidMaterial.onBeforeCompile=shader=>{
+   shader.uniforms.uCoffeeTime=liquidGlow.time;shader.uniforms.uCoffeeEnergy=liquidGlow.energy;
+   shader.vertexShader='varying vec3 vCoffeePosition;\n'+shader.vertexShader;
+   shader.vertexShader=shader.vertexShader.replace('#include <begin_vertex>','#include <begin_vertex>\nvCoffeePosition=position;');
+   shader.fragmentShader='varying vec3 vCoffeePosition;\nuniform float uCoffeeTime;\nuniform float uCoffeeEnergy;\n'+shader.fragmentShader;
+   shader.fragmentShader=shader.fragmentShader.replace('#include <emissivemap_fragment>',`#include <emissivemap_fragment>
+    vec2 p=vCoffeePosition.xz;
+    float warp=sin(p.x*6.0+p.y*4.0-uCoffeeTime*.8)*2.1+sin(p.y*7.0-p.x*3.0+uCoffeeTime*.5)*1.2;
+    float ribbon=pow(max(0.0,1.0-abs(sin(p.x*12.0+p.y*8.0+warp+uCoffeeTime*.65))),12.0);
+    float crossWave=pow(max(0.0,1.0-abs(sin(p.y*14.0-p.x*5.0-warp-uCoffeeTime*.4))),16.0);
+    float pool=exp(-length(p-vec2(-.2,.12))*2.8);
+    totalEmissiveRadiance+=vec3(.15,.065,.018)*(ribbon+crossWave*.18)*pool*(.45+uCoffeeEnergy*.3);
+   `);
+  };
   const coffee=new THREE.Mesh(liquidGeometry,liquidMaterial);coffee.position.y=1.14;group.add(coffee);
   const liquidPositions=liquidGeometry.attributes.position;
   const baseLiquid=Float32Array.from(liquidPositions.array);
@@ -57,6 +63,7 @@ function Cup({dark=false,rust=false}){
    return .066*Math.tanh((x*sloshX+z*sloshZ+(swell+drift*.003)*energy*(.45+.55*r))/.066);
   };
   const updateLiquid=(time,energy)=>{
+   liquidGlow.time.value=time;liquidGlow.energy.value=energy;
    for(let i=0;i<liquidPositions.count;i++){
     const x=baseLiquid[i*3],z=baseLiquid[i*3+2],height=surface(x,z,time,energy);
     // Follow the tapered inner wall as the contact line rises and falls.
@@ -98,10 +105,10 @@ function Cup({dark=false,rust=false}){
   };frame=requestAnimationFrame(render);
   return()=>{cancelAnimationFrame(frame);ro.disconnect();window.removeEventListener('pointermove',move);document.documentElement.removeEventListener('pointerleave',leave);window.removeEventListener('blur',leave);window.removeEventListener('scroll',scroll);const materials=new Set();scene.traverse(o=>{o.geometry?.dispose();if(o.material)materials.add(o.material);});materials.forEach(m=>m.dispose());env.dispose();pmrem.dispose();renderer.dispose();renderer.domElement.remove();};
  },[dark,rust]);
- return <div className="cup-stage" ref={holder} role="img" aria-label="Cream and charcoal stoneware mug with dark coffee that sloshes toward the rim as the cup moves"><span className="cup-shadow"/></div>;
+ return <div className="cup-stage" ref={holder} role="img" aria-label="Warm terracotta mug and saucer with amber-lit dark coffee that sloshes toward the rim as the cup moves"><span className="cup-shadow"/></div>;
 }
-function PourCard({children,enabled,organic=false}){
- const resting=useRef(null);if(resting.current===null)resting.current={angle:(Math.random()-.5)*5,offset:(Math.random()-.5)*12};
+function PourCard({children,enabled,organic=false,restingTilt}){
+ const resting=useRef(null);if(resting.current===null)resting.current={angle:restingTilt??(Math.random()-.5)*5,offset:(Math.random()-.5)*12};
  const card=useRef();
  const move=e=>{
   if(!enabled||e.pointerType!=='mouse'||matchMedia('(prefers-reduced-motion: reduce)').matches)return;
