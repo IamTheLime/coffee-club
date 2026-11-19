@@ -170,3 +170,10 @@ html:has(.full-app){overflow-x:hidden;overscroll-behavior-x:none}
 .entry-dialog .editor-signature .author-head-sticker{right:4px;bottom:8px}
 .entry-dialog .delete-controls{margin:0;font-size:11px}
 @media(max-width:600px){.full-app .entry-dialog{padding:8px}.entry-dialog .pour-card{padding:7px}.entry-dialog .pour-content{padding:0 8px}.entry-dialog .dialog-heading{padding:12px 4px}.editor-fields{padding-left:0;padding-right:20px}.entry-dialog .editor-footer{padding:10px 60px 10px 0;gap:6px}.entry-dialog .editor-signature .fine-print{display:none}.entry-dialog .editor-signature .author-head-sticker{width:48px;height:48px}}
+
+/* A close-fitting ticket within the fullscreen editor, without a foil spotlight. */
+.entry-dialog>.pour-perspective{width:100%;max-width:760px;margin-inline:auto}
+.entry-dialog .card-foil{display:none}
+.entry-dialog .pour-content{max-width:none;padding-inline:16px}
+.editor-fields-content{max-width:none}
+@media(max-width:600px){.entry-dialog .pour-content{padding-inline:8px}}
