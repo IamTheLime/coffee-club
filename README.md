@@ -24,7 +24,7 @@ Local database: `.data/coffee.sqlite` (plus SQLite WAL/SHM files). This local fi
 
 Four cafés and two Tiago reviews import once from `server/imported-reviews.json`. Original notes, scores and ambiguous day/month text are retained; no drink, year or photo was invented. Editing an imported entry requires filling its missing drink and date.
 
-## Production settings (not deployed)
+## Production deployment
 
 Build, then run `node server/start.mjs` with `NODE_ENV=production`, `APP_ORIGIN=https://sippindiesel.tiagolima.io`, a new production `PASSWORD_HASH`, `DATABASE_PATH` on the encrypted app volume, `HOST=127.0.0.1`, and `PORT=3001`. Supply settings through a protected systemd environment file, not Git. Caddy proxies to port 3001. Bind startup to the unlocked volume and run as the dedicated app user. No PostgreSQL is needed for this app.
 
@@ -34,4 +34,6 @@ The manifest, 192/512px icons and network-only service worker support Android in
 
 ## Visual assets
 
-Cup, saucer, spoon, liquid and card patterns are procedural, editable source. Cormorant Garamond and Manrope fonts are locally hosted; original Google Fonts stylesheet is in public/assets/fonts-source.css. Unused candidate takeaway model from https://tevy.dev/models/takeaway-coffee-cup/v1/lod0.glb is CC0 and is not used by the app. The jazz reference is inspiration only and is not distributed as an app asset.
+Live at https://sippindiesel.tiagolima.io. The main page selects a persona; `/users/tiago`, `/users/sam`, and `/users/archie` open the matching login. The production password hash comes from the CoffeeClub 1Password item and lives in the encrypted secrets directory. Source snapshots are pinned in HostingerUtils/apps/coffee-club.tar.gz and built with its coffee-club.nix package. To update, commit this repo, regenerate the archive with an absolute output path, commit/push HostingerUtils, then rebuild its hostinger flake on the server.
+
+Cup, saucer, spoon, liquid and card patterns are procedural, editable source. Pixel characters are generated transparent PNGs in public/assets/characters; their prompts are recorded in design-brief.md. Cormorant Garamond and Manrope fonts are locally hosted; original Google Fonts stylesheet is in public/assets/fonts-source.css. Unused candidate takeaway model from https://tevy.dev/models/takeaway-coffee-cup/v1/lod0.glb is CC0 and is not used by the app. The jazz reference is inspiration only and is not distributed as an app asset.
