@@ -93,5 +93,13 @@ html:has(.full-app){overflow-x:hidden;overscroll-behavior-x:none}
 .mobile-bean-indicator{pointer-events:none!important;width:18px;right:2px;opacity:.8}.mobile-bean-indicator .bean-scroll-thumb{scale:.64}.mobile-bean-indicator .bean-scroll-line{opacity:.45}.dialog-scrollbar.mobile-bean-indicator{width:14px}.dialog-scrollbar.mobile-bean-indicator .bean-scroll-thumb{scale:.52}
 @media(hover:none) and (prefers-reduced-motion:no-preference){.review-sticker-art{transform:translate(calc(var(--pattern-x,0px)*.65),calc(var(--pattern-y,0px)*.65)) rotate(var(--sticker-angle))}.review-sticker-shadow{transform:translate(calc(3px - var(--pattern-x,0px)*.35),calc(6px - var(--pattern-y,0px)*.35)) rotate(var(--sticker-angle))}}
 
-/* Emergency mobile rollback: no touch-driven transforms or WebGL scroll indicator. */
-@media(hover:none),(pointer:coarse){.bean-scrollbar{display:none!important}.full-app .pour-card,.full-app .pour-content,.full-app .review-sticker img{transition:none!important}.full-app .pour-card{transform:rotate(var(--rest-tilt,0deg))!important}.full-app .review-sticker-art{transform:rotate(var(--sticker-angle))}.full-app .review-sticker-shadow{transform:translate(3px,6px) rotate(var(--sticker-angle))}.full-app .people-grid .pour-content,.full-app .roast-panel .pour-content{backdrop-filter:none;-webkit-backdrop-filter:none}}
+/* Mobile keeps blur off and uses native scroll-timeline motion below. */
+@media(hover:none),(pointer:coarse){.full-app .pour-card,.full-app .pour-content,.full-app .review-sticker img{transition:none!important}.full-app .pour-card{transform:rotate(var(--rest-tilt,0deg))}.full-app .review-sticker-art{transform:rotate(var(--sticker-angle))}.full-app .review-sticker-shadow{transform:translate(3px,6px) rotate(var(--sticker-angle))}.full-app .people-grid .pour-content,.full-app .roast-panel .pour-content{backdrop-filter:none;-webkit-backdrop-filter:none}}
+
+.mobile-roast-bean{display:block;width:44px;height:54px;transform:perspective(100px) rotateY(var(--bean-spin));transform-origin:center}.mobile-roast-bean svg{display:block;width:100%;height:100%}@media(prefers-reduced-motion:reduce){.mobile-roast-bean{transform:none}}
+
+/* Native scroll timelines: no touch listeners, per-card RAF loops, or blur. */
+@supports(animation-timeline:view()){@media(pointer:coarse) and (prefers-reduced-motion:no-preference){.full-app .pour-card{animation:mobile-card-drift linear both;animation-timeline:view();animation-range:entry 0% exit 100%}}}
+@keyframes mobile-card-drift{from{transform:translateY(2px) rotate(calc(var(--rest-tilt,0deg) - .65deg))}to{transform:translateY(-2px) rotate(calc(var(--rest-tilt,0deg) + .65deg))}}
+
+@media(pointer:coarse){.entry-dialog::backdrop{backdrop-filter:none;-webkit-backdrop-filter:none}}

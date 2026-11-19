@@ -26,7 +26,7 @@ export default function App({Cup,PourCard}){
 }
 function Editor({review,cafes,close,saved}){
  const[error,setError]=useState(''),[busy,setBusy]=useState(false),[cafe,setCafe]=useState(review.cafe_id||cafes[0]?.id||''),[score,setScore]=useState(review.score||7),[photo,setPhoto]=useState(undefined),[confirmDelete,setConfirmDelete]=useState(false);
- useEffect(()=>{const old=document.body.style.overflow;document.body.style.overflow='hidden';return()=>{document.body.style.overflow=old;};},[]);
+ useEffect(()=>{const old=document.body.style.overflow;document.body.style.overflow='hidden';document.documentElement.setAttribute('data-coffee-dialog-open','');return()=>{document.body.style.overflow=old;document.documentElement.removeAttribute('data-coffee-dialog-open');};},[]);
  async function readPhoto(e){const file=e.target.files[0];if(!file)return;if(file.size>6000000){setError('Please choose a photo under 6 MB.');return;}const reader=new FileReader();reader.onload=()=>{setPhoto(reader.result);setError('');};reader.onerror=()=>setError('Could not read the photo.');reader.readAsDataURL(file);}
  async function submit(e){e.preventDefault();setBusy(true);setError('');try{const data=Object.fromEntries(new FormData(e.currentTarget));delete data.upload;Object.assign(data,{score:Number(score),cafeId:cafe,photo});await api('reviews'+(review.id?'/'+review.id:''),review.id?'PUT':'POST',data);await saved();}catch(e){setError(e.message);}finally{setBusy(false);}}
  async function remove(){setBusy(true);try{await api('reviews/'+review.id,'DELETE');await saved();}catch(e){setError(e.message);setBusy(false);}}

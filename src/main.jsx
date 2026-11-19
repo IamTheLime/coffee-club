@@ -10,8 +10,9 @@ import './style.css';
 function Cup({dark=false,rust=false}){
  const holder=useRef();
  useEffect(()=>{
+  const mobile=matchMedia('(pointer: coarse)');
   let renderer;try{renderer=new THREE.WebGLRenderer({alpha:true,antialias:true,powerPreference:'low-power'});}catch{return;}
-  const el=holder.current;el.appendChild(renderer.domElement);renderer.setPixelRatio(Math.min(devicePixelRatio,1.6));renderer.setClearColor(0,0);renderer.outputColorSpace=THREE.SRGBColorSpace;renderer.toneMapping=THREE.ACESFilmicToneMapping;renderer.toneMappingExposure=dark?1.4:1.15;
+  const el=holder.current;el.appendChild(renderer.domElement);renderer.setPixelRatio(Math.min(devicePixelRatio,mobile.matches?1.25:1.6));renderer.setClearColor(0,0);renderer.outputColorSpace=THREE.SRGBColorSpace;renderer.toneMapping=THREE.ACESFilmicToneMapping;renderer.toneMappingExposure=dark?1.4:1.15;
   const scene=new THREE.Scene(),camera=new THREE.PerspectiveCamera(33,1,.1,50);camera.position.set(0,3.6,6);camera.lookAt(0,.55,0);
   const pmrem=new THREE.PMREMGenerator(renderer);const env=pmrem.fromScene(new RoomEnvironment(),.04);scene.environment=env.texture;
   const group=new THREE.Group();scene.add(group);group.rotation.set(.06,-.35,.13);
@@ -30,7 +31,7 @@ function Cup({dark=false,rust=false}){
   // Amber light catches changing surface normals and warms the inner glaze.
   const cupLight=new THREE.PointLight(0xffb866,.65,1.8,2);cupLight.position.set(-.36,1.52,.18);group.add(cupLight);
   // Dense polar surface: waves change the actual liquid geometry and reflections.
-  const liquidGeometry=new THREE.RingGeometry(.001,.734,96,28);
+  const liquidGeometry=new THREE.RingGeometry(.001,.734,mobile.matches?48:96,mobile.matches?12:28);
   liquidGeometry.rotateX(-Math.PI/2);
   const liquidMaterial=new THREE.MeshPhysicalMaterial({color:0x211d19,roughness:.26,metalness:0,clearcoat:.3,clearcoatRoughness:.2,envMapIntensity:.07,specularIntensity:.2});
   const liquidGlow={time:{value:0},energy:{value:0}};
@@ -88,9 +89,11 @@ function Cup({dark=false,rust=false}){
   window.addEventListener('blur',leave);
   window.addEventListener('scroll',scroll,{passive:true});
   const render=t=>{
+   if(mobile.matches&&t-lastTime<1000/30){frame=requestAnimationFrame(render);return;}
+   const modalOpen=document.documentElement.hasAttribute('data-coffee-dialog-open');
    const dt=Math.min((t-lastTime)/1000,.05);lastTime=t;
    const visible=el.getBoundingClientRect().bottom>0&&el.getBoundingClientRect().top<innerHeight;
-   if(!motion.matches&&visible&&!document.hidden){
+   if(!motion.matches&&visible&&!document.hidden&&!modalOpen){
     const change=(pointerTarget-pointer)*(1-Math.exp(-dt*4));pointer+=change;
     velocityX-=change*5;
     velocityX+=(-sloshX*22-velocityX*2.8)*dt;velocityZ+=(-sloshZ*19-velocityZ*2.5)*dt;
@@ -99,8 +102,8 @@ function Cup({dark=false,rust=false}){
     updateLiquid(phase,1+scrollEnergy*2);
     group.position.y=Math.sin(phase*.4)*.012;group.rotation.set(.06+sloshZ*.24,-.35+pointer,.13-sloshX*.2);
    }
-   else if(motion.matches){pointer=0;pointerTarget=0;scrollEnergy=0;sloshX=sloshZ=velocityX=velocityZ=0;updateLiquid(0,0);group.position.y=0;group.rotation.set(.06,-.35,.13);}
-   if(visible&&!document.hidden)renderer.render(scene,camera);
+   else if(motion.matches&&!modalOpen){pointer=0;pointerTarget=0;scrollEnergy=0;sloshX=sloshZ=velocityX=velocityZ=0;updateLiquid(0,0);group.position.y=0;group.rotation.set(.06,-.35,.13);}
+   if(visible&&!document.hidden&&!modalOpen)renderer.render(scene,camera);
    frame=requestAnimationFrame(render);
   };frame=requestAnimationFrame(render);
   return()=>{cancelAnimationFrame(frame);ro.disconnect();window.removeEventListener('pointermove',move);document.documentElement.removeEventListener('pointerleave',leave);window.removeEventListener('blur',leave);window.removeEventListener('scroll',scroll);const materials=new Set();scene.traverse(o=>{o.geometry?.dispose();if(o.material)materials.add(o.material);});materials.forEach(m=>m.dispose());env.dispose();pmrem.dispose();renderer.dispose();renderer.domElement.remove();};
