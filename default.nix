@@ -2,9 +2,15 @@
 pkgs.buildNpmPackage {
   pname = "sippin-diesel";
   version = "0.1.0";
-  src = pkgs.lib.cleanSource ./.;
+  src = pkgs.lib.cleanSourceWith {
+    src = ./.;
+    filter = path: type: let name = baseNameOf path; in
+      !(builtins.elem name [ ".git" ".data" "node_modules" "dist" "import-extract.txt" ])
+      && !(pkgs.lib.hasPrefix ".env" name)
+      && !(pkgs.lib.hasSuffix ".sqlite" name);
+  };
   nodejs = pkgs.nodejs_24;
-  npmDepsHash = pkgs.lib.fakeHash;
+  npmDepsHash = "sha256-SPN3dHW5Lwg/B521zojVmn336C6bxafrzNJbAwmkOhQ=";
   nativeBuildInputs = [ pkgs.makeWrapper ];
   installPhase = ''
     runHook preInstall
