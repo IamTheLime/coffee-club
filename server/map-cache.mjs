@@ -1,6 +1,7 @@
 import {readFileSync} from 'node:fs';
 import {VectorTile} from '@mapbox/vector-tile';
 import {PbfReader} from 'pbf';
+import {locationFromMapLink} from './map-links.mjs';
 const UA='SippinDiesel/1.0 (+https://sippindiesel.tiagolima.io/)';
 const layers=['landcover','landuse','water','waterway','building','transportation'];
 const normal=s=>s.normalize('NFKD').replace(/\p{Diacritic}/gu,'').toLowerCase().replace(/[^a-z0-9]/g,'');
@@ -21,6 +22,7 @@ function clip(r){
 export function createProviders({geocoder=process.env.MAP_GEOCODER_URL||'https://nominatim.openstreetmap.org/search',tileSource=process.env.MAP_TILE_SOURCE_URL||'https://tiles.openfreemap.org/planet'}={}){
  let lastLookup=0;
  return {
+  resolveLink:locationFromMapLink,
   async locate(cafe){
    await sleep(Math.max(0,1100-(Date.now()-lastLookup)));lastLookup=Date.now();
    const url=new URL(geocoder);url.search=new URLSearchParams({q:`${cafe.name} ${cafe.address}`.trim(),format:'jsonv2',limit:'5',addressdetails:'1'});
@@ -49,7 +51,8 @@ export function createProviders({geocoder=process.env.MAP_GEOCODER_URL||'https:/
 }
 export function createMapCache(db,{providers=createProviders(),now=Date.now}={}){
  db.exec(`CREATE TABLE IF NOT EXISTS cafe_maps(cafe_id TEXT PRIMARY KEY REFERENCES cafes(id),value TEXT NOT NULL,retry_after INTEGER NOT NULL DEFAULT 0);
- CREATE TABLE IF NOT EXISTS map_locations(query TEXT PRIMARY KEY,value TEXT NOT NULL,retry_after INTEGER NOT NULL);`);
+ CREATE TABLE IF NOT EXISTS map_locations(query TEXT PRIMARY KEY,value TEXT NOT NULL,retry_after INTEGER NOT NULL);
+ CREATE TABLE IF NOT EXISTS map_link_locations(url TEXT PRIMARY KEY,value TEXT NOT NULL);`);
  const read=id=>{const r=db.prepare('SELECT * FROM cafe_maps WHERE cafe_id=?').get(id);return r&&{...r,value:JSON.parse(r.value)};};
  const save=(id,value,retry=0)=>{db.prepare('INSERT INTO cafe_maps VALUES(?,?,?) ON CONFLICT(cafe_id) DO UPDATE SET value=excluded.value,retry_after=excluded.retry_after').run(id,JSON.stringify(value),retry);return value;};
  const seeds=JSON.parse(readFileSync(new URL('./cafe-maps.json',import.meta.url)));
@@ -64,8 +67,14 @@ export function createMapCache(db,{providers=createProviders(),now=Date.now}={})
  async function generate(cafe,location){save(cafe.id,{status:'located',location});return save(cafe.id,{status:'ready',map:await providers.geometry(location)});}
  return {
   get(cafe){
-   const cached=read(cafe.id);if(cached&&cached.value.status!=='located'&&(!cached.retry_after||cached.retry_after>now()))return Promise.resolve(cached.value);
+   const cached=read(cafe.id),link=cafe.maps_url&&db.prepare('SELECT value FROM map_link_locations WHERE url=?').get(cafe.maps_url);
+   if(cached&&(cached.value.status==='ready'||(cached.value.status==='unavailable'&&cached.retry_after>now())||((link||!cafe.maps_url)&&cached.value.status!=='located'&&(!cached.retry_after||cached.retry_after>now()))))return Promise.resolve(cached.value);
    return job(cafe,async()=>{
+    if(cafe.maps_url&&!link){
+     const location=await providers.resolveLink?.(cafe.maps_url)||null;
+     db.prepare('INSERT INTO map_link_locations VALUES(?,?) ON CONFLICT(url) DO UPDATE SET value=excluded.value').run(cafe.maps_url,JSON.stringify(location));
+     if(location)return generate(cafe,location);
+    }else if(link&&JSON.parse(link.value))return generate(cafe,JSON.parse(link.value));
     if(cached?.value.location)return generate(cafe,cached.value.location);
     const query=`${cafe.name} ${cafe.address}`.trim().toLowerCase();
     const hit=db.prepare('SELECT * FROM map_locations WHERE query=?').get(query);

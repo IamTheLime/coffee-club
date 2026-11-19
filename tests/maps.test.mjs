@@ -24,3 +24,10 @@ test('should back off provider failures and retain coordinates for retry without
 test('should cache missing locations rather than geocode on each visit',async t=>{
  let lookups=0;const cache=createMapCache(database(t),{providers:{locate:async()=>{lookups++;return [];}}});assert.equal((await cache.get(cafe)).status,'missing');await cache.get(cafe);assert.equal(lookups,1);
 });
+
+test('should prefer link coordinates over geocoding, including previously missing maps',async t=>{
+ const db=database(t);let lookup=0;const c={...cafe,maps_url:'https://www.google.com/maps/place/Cafe/data=!3d51.5!4d-0.1'};
+ let cache=createMapCache(db,{providers:{locate:async()=>[],geometry:async()=>map}});await cache.get(cafe);
+ cache=createMapCache(db,{providers:{resolveLink:async()=>location,locate:async()=>{lookup++;return [];},geometry:async p=>{assert.equal(p.lat,location.lat);return map;}}});
+ assert.equal((await cache.get(c)).status,'ready');assert.equal(lookup,0);
+});

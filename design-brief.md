@@ -57,3 +57,6 @@ Static OpenFreeMap/OpenMapTiles geometry for verified Rosslyn and Arôme locatio
 
 ### Server-cached map release
 Missing maps resolve on journal load and persist in encrypted SQLite. Ambiguous branches present location choices; unresolved cafés keep the Maps link. Preserve the approved 1.6× zoom, map icon, palette and static canvas performance.
+
+### Small member portraits
+Transparent 24px pixel heads derived with imagegen from the existing full-body characters. Palette reduced to 16 colours, no dithering; displayed statically at native resolution beside review authors, the current member and the hero roster. Original character cards stay unchanged.
