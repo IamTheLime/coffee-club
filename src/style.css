@@ -149,3 +149,24 @@ html:has(.full-app){overflow-x:hidden;overscroll-behavior-x:none}
 }
 @media(hover:hover) and (pointer:fine){.entry-dialog::backdrop{backdrop-filter:blur(6px);-webkit-backdrop-filter:blur(6px)}}
 @media(max-width:600px){.entry-dialog .pour-card{padding:4px}.entry-dialog .pour-content{padding:8px}}
+
+/* Frosted review paper; the fullscreen editor scrolls only its middle. */
+.full-app .cafe-grid .pour-content,.full-app .entry-dialog .pour-content{background:color-mix(in srgb,var(--card) 95%,transparent);backdrop-filter:blur(4px);-webkit-backdrop-filter:blur(4px)}
+.full-app .entry-dialog{inset:0;width:100%;max-width:none;height:100dvh;max-height:100dvh;margin:0;padding:clamp(12px,3vw,36px);border:0;border-radius:0;overflow:hidden;box-sizing:border-box;background:var(--paper)}
+.entry-dialog>.pour-perspective,.entry-dialog .pour-card,.entry-dialog .pour-content{height:100%;min-height:0;box-sizing:border-box}
+.entry-dialog .pour-card{padding:12px;overflow:hidden;border:1px solid var(--line);border-radius:8px}
+.entry-dialog .pour-content{padding:0 24px;max-width:1040px;margin:auto}
+.entry-dialog form{height:100%;min-height:0;padding:0;display:grid;grid-template-rows:auto minmax(0,1fr) auto}
+.entry-dialog .dialog-heading{padding:16px 8px;border-bottom:1px solid var(--line);align-items:center}
+.entry-dialog .dialog-heading h2{margin:0;font-size:clamp(25px,3vw,38px)}
+.entry-dialog form>.review-sticker{top:12px;right:56px;width:32px;height:32px}
+.entry-dialog .dialog-heading h2{padding-right:42px}
+.editor-fields{min-height:0;overflow-y:auto;overflow-x:hidden;overscroll-behavior:contain;padding:0 36px 0 8px;scrollbar-width:none}
+.editor-fields::-webkit-scrollbar{display:none}
+.editor-fields-content{max-width:760px;margin:auto;padding:6px 4px 20px}
+.entry-dialog .editor-footer{position:relative;display:flex;align-items:center;gap:16px;flex-wrap:wrap;padding:12px 76px 12px 8px;border-top:1px solid var(--line)}
+.entry-dialog .editor-footer .primary{margin:0}
+.entry-dialog .editor-signature{position:static;min-height:0;margin:0;padding:0}
+.entry-dialog .editor-signature .author-head-sticker{right:4px;bottom:8px}
+.entry-dialog .delete-controls{margin:0;font-size:11px}
+@media(max-width:600px){.full-app .entry-dialog{padding:8px}.entry-dialog .pour-card{padding:7px}.entry-dialog .pour-content{padding:0 8px}.entry-dialog .dialog-heading{padding:12px 4px}.editor-fields{padding-left:0;padding-right:20px}.entry-dialog .editor-footer{padding:10px 60px 10px 0;gap:6px}.entry-dialog .editor-signature .fine-print{display:none}.entry-dialog .editor-signature .author-head-sticker{width:48px;height:48px}}

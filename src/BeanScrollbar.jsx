@@ -22,12 +22,12 @@ export default function BeanScrollbar({dialog=false}){
  const rail=useRef(),target=useRef();const[state,setState]=useState({progress:0,visible:false,interactive:false,style:{}});
  useEffect(()=>{
   const media=matchMedia('(hover: hover) and (pointer: fine)');
-  const el=dialog?rail.current.closest('dialog'):document.documentElement;target.current=el;
+  const el=dialog?(rail.current.closest('dialog').querySelector('.editor-fields')||rail.current.closest('dialog')):document.documentElement;target.current=el;
   const source=dialog?el:window;let max=0,frame=0,style={};
   const paint=()=>{frame=0;const progress=max>0?Math.max(0,Math.min(1,el.scrollTop/max)):0;setState(previous=>Math.abs(previous.progress-progress)<.002?previous:{...previous,progress});};
   const schedule=()=>{if(!frame)frame=requestAnimationFrame(paint);};
   const measure=()=>{max=el.scrollHeight-el.clientHeight;if(dialog){const rect=el.getBoundingClientRect();style={top:rect.top+18,right:innerWidth-rect.right+1,height:Math.max(0,rect.height-36)};}setState({progress:max>0?Math.max(0,Math.min(1,el.scrollTop/max)):0,visible:max>1,interactive:media.matches,style});el.classList.toggle('bean-scroll-ready',media.matches&&max>1);};
-  const observer=new ResizeObserver(measure);observer.observe(el);if(dialog&&el.querySelector('form'))observer.observe(el.querySelector('form'));if(!dialog&&document.querySelector('#root'))observer.observe(document.querySelector('#root'));
+  const observer=new ResizeObserver(measure);observer.observe(el);if(dialog&&el.firstElementChild)observer.observe(el.firstElementChild);if(!dialog&&document.querySelector('#root'))observer.observe(document.querySelector('#root'));
   source.addEventListener('scroll',schedule,{passive:true});window.addEventListener('resize',measure);media.addEventListener('change',measure);measure();
   return()=>{cancelAnimationFrame(frame);observer.disconnect();source.removeEventListener('scroll',schedule);window.removeEventListener('resize',measure);media.removeEventListener('change',measure);el.classList.remove('bean-scroll-ready');};
  },[dialog]);
