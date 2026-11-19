@@ -135,3 +135,17 @@ html:has(.full-app){overflow-x:hidden;overscroll-behavior-x:none}
  .author-head-shadow{transform:translate(calc(3px - var(--pattern-x,0px)*.45),calc(6px - var(--pattern-y,0px)*.45)) rotate(var(--sticker-angle))}
 }
 @media(pointer:coarse),(prefers-reduced-motion:reduce){.author-head-sticker img{transition:none}}
+
+/* The editor repeats the journal's patterned cover and floating paper. */
+.full-app .entry-dialog{background:color-mix(in srgb,var(--paper) 95%,transparent)}
+.entry-dialog>.pour-perspective{margin:0;min-width:0}
+.entry-dialog .pour-card{margin:0;padding:12px;transform:none!important;background:transparent;box-shadow:none;border:0;overflow:visible}
+.entry-dialog .pour-content{padding:16px;background:color-mix(in srgb,var(--card) 95%,transparent)}
+.entry-dialog form{position:relative;padding-top:12px}
+.entry-dialog .coffee-pattern{inset:0;overflow:hidden}
+.entry-dialog .editor-signature{position:relative;min-height:76px;padding:20px 76px 0 0;margin-top:16px}
+@media(hover:hover) and (pointer:fine) and (prefers-reduced-motion:no-preference){
+ .entry-dialog .pour-content{transform:translate(calc(var(--pattern-x,0px)*-.25),calc(var(--pattern-y,0px)*-.25));transition:transform 180ms ease-out}
+}
+@media(hover:hover) and (pointer:fine){.entry-dialog::backdrop{backdrop-filter:blur(6px);-webkit-backdrop-filter:blur(6px)}}
+@media(max-width:600px){.entry-dialog .pour-card{padding:4px}.entry-dialog .pour-content{padding:8px}}
