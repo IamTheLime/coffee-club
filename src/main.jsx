@@ -74,7 +74,8 @@ function Cup({dark=false,rust=false}){
  },[dark,rust]);
  return <div className="cup-stage" ref={holder} role="img" aria-label="Glazed espresso cup with gentle, irregular ocean-like movement on the coffee surface"><span className="cup-shadow"/></div>;
 }
-function PourCard({children,enabled}){
+function PourCard({children,enabled,organic=false}){
+ const resting=useRef(null);if(resting.current===null)resting.current={angle:(Math.random()-.5)*5,offset:(Math.random()-.5)*12};
  const card=useRef();
  const move=e=>{
   if(!enabled||e.pointerType!=='mouse'||matchMedia('(prefers-reduced-motion: reduce)').matches)return;
@@ -85,10 +86,11 @@ function PourCard({children,enabled}){
   card.current.style.setProperty('--tilt-y',`${x*3}deg`);
   card.current.style.setProperty('--pattern-x',`${x*7}px`);
   card.current.style.setProperty('--pattern-y',`${y*5}px`);
-  card.current.style.setProperty('--glint-x',`${50+x*30}%`);
+  card.current.style.setProperty('--glint-x',`${50+x*45}%`);
+  card.current.style.setProperty('--glint-y',`${50+y*45}%`);
  };
- const reset=()=>{for(const key of ['--tilt-x','--tilt-y','--pattern-x','--pattern-y','--glint-x'])card.current.style.removeProperty(key);};
- return <div className={enabled?'pour-perspective':undefined} onPointerMove={move} onPointerLeave={reset} onPointerCancel={reset}><section ref={card} className={'journal'+(enabled?' pour-card':'')}>
+ const reset=()=>{for(const key of ['--tilt-x','--tilt-y','--pattern-x','--pattern-y','--glint-x','--glint-y'])card.current.style.removeProperty(key);};
+ return <div className={enabled?'pour-perspective':undefined} onPointerMove={move} onPointerLeave={reset} onPointerCancel={reset}><section ref={card} style={organic?{'--rest-tilt':resting.current.angle+'deg','--rest-offset':resting.current.offset+'px'}:undefined} className={'journal'+(enabled?' pour-card':'')+(organic?' organic-card':'')}>
  {enabled&&<><div className="coffee-pattern" aria-hidden="true"><span className="coffee-ring"/><span className="coffee-bean bean-one"/><span className="coffee-bean bean-two"/><span className="coffee-bean bean-three"/></div><div className="card-foil" aria-hidden="true"/></>}
  <div className="pour-content">{children}</div></section></div>;
 }
