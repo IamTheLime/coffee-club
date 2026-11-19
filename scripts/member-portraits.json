@@ -1,0 +1,132 @@
+{
+  "palette": {
+    ".": [
+      0,
+      0,
+      0,
+      0
+    ],
+    "o": [
+      67,
+      37,
+      27,
+      255
+    ],
+    "s": [
+      245,
+      181,
+      135,
+      255
+    ],
+    "h": [
+      255,
+      208,
+      160,
+      255
+    ],
+    "a": [
+      210,
+      135,
+      96,
+      255
+    ],
+    "b": [
+      104,
+      58,
+      35,
+      255
+    ],
+    "w": [
+      255,
+      248,
+      231,
+      255
+    ],
+    "p": [
+      56,
+      35,
+      27,
+      255
+    ],
+    "g": [
+      194,
+      148,
+      56,
+      255
+    ],
+    "u": [
+      43,
+      113,
+      167,
+      255
+    ],
+    "t": [
+      143,
+      75,
+      48,
+      255
+    ],
+    "v": [
+      137,
+      151,
+      103,
+      255
+    ]
+  },
+  "sprites": {
+    "tiago": [
+      "................",
+      ".....oooooo.....",
+      "....ohhhhhho....",
+      "...ohhhhhhhso...",
+      "..ohhhhhhhhsso..",
+      "..ohhhhhhhhsso..",
+      "..ossbsssbssso..",
+      ".oasswwsswwssao.",
+      ".oasswpsspwssao.",
+      "..osssssssssso..",
+      "..obsssassssbo..",
+      "...obbbssbbbo...",
+      "...obbwwwbbbo...",
+      "....obbbbbbo....",
+      ".....oooooo.....",
+      "......tttt......"
+    ],
+    "sam": [
+      "......oooo......",
+      ".....ohhhho.....",
+      "....ohhhhhso....",
+      "...ohhhhhhsso...",
+      "...ohhhhhhsso...",
+      "...osggssggso...",
+      "...osssssssso...",
+      "...oooossoooo...",
+      "..oowpoooopwoo..",
+      "...owwossowwo...",
+      "...ossssassso...",
+      "....osssssso....",
+      ".....osppso.....",
+      "......osso......",
+      "......osso......",
+      ".....otttto....."
+    ],
+    "archie": [
+      "................",
+      ".....oooooo.....",
+      "....ohhhhhho....",
+      "...ohhhhhhhso...",
+      "..ohhhhhhhhsso..",
+      "..osssssssssso..",
+      "..ossbbssbbsso..",
+      ".oasswwsswwssao.",
+      ".oasswussuwssao.",
+      "..osssssssssso..",
+      "..osssssasssso..",
+      "...osssbbssso...",
+      "...osssssssso...",
+      "....ossppsso....",
+      ".....ooovoo.....",
+      "......vv.v......"
+    ]
+  }
+}

@@ -115,5 +115,5 @@ html:has(.full-app){overflow-x:hidden;overscroll-behavior-x:none}
 
 .map-placeholder{padding:1rem 0;color:var(--muted);font-size:13px}.map-choices{display:grid;gap:.5rem;margin-bottom:1rem}.map-choices button{text-align:left;white-space:normal;overflow-wrap:anywhere;border:1px solid var(--line);padding:.65rem;color:var(--ink)}
 
-.member-name{display:inline-flex;align-items:center;gap:6px;white-space:nowrap;vertical-align:middle}.member-name img{width:24px;height:24px;flex:none;image-rendering:pixelated;object-fit:contain}.member-roster{display:flex;align-items:center;gap:14px;flex-wrap:wrap}.full-app nav .member{display:flex;align-items:center;gap:5px}@media(max-width:900px){.member-roster{justify-content:center;gap:10px}}
+.member-name{display:inline-flex;align-items:center;gap:6px;white-space:nowrap;vertical-align:middle}.member-name img{width:16px;height:16px;flex:none;image-rendering:pixelated;object-fit:contain}.member-roster{display:flex;align-items:center;gap:14px;flex-wrap:wrap}.full-app nav .member{display:flex;align-items:center;gap:5px}@media(max-width:900px){.member-roster{justify-content:center;gap:10px}}
 .eyebrow>.member-name{display:inline-flex;width:auto;height:auto;background:none}

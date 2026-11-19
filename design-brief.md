@@ -63,3 +63,6 @@ Transparent 24px pixel heads derived with imagegen from the existing full-body c
 
 ### Approved tiny portraits, second pass
 Redrawn with built-in imagegen as genuinely low-detail heads: solid beard for Tiago, glasses/blond eyebrows for Sam, blue eyes for Archie. User approved the actual-size comparison and requested white eye areas while preserving brown/blue pupils. Final transparent PNGs are 24 × 24, exported with nearest-neighbour pixel alignment checked to retain both pupils. No extra facial marks or animations.
+
+### Native 16px release
+Hand-drawn 16 × 16 pixel grids replace reduced generated portraits. Render at exactly 16 CSS pixels. Sam has open lower glasses rims and a bare chin; Archie has level eyes, a straight mouth and a two-pixel central toothbrush moustache. His full-body character receives the same narrow moustache via imagegen. Editable pixel grids are in scripts/member-portraits.json.
