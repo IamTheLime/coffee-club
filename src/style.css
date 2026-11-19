@@ -122,3 +122,16 @@ html:has(.full-app){overflow-x:hidden;overscroll-behavior-x:none}
 .coffee-entry .entry-meta{position:relative;min-height:74px;padding-right:76px;align-items:center;flex-wrap:wrap;gap:4px 10px}
 .author-head-sticker{position:absolute;right:-4px;bottom:0;width:64px;height:64px;object-fit:contain;pointer-events:none;image-rendering:pixelated;transform:rotate(var(--head-tilt,0deg));filter:drop-shadow(2px 3px 1px #29170c38)}
 @media(max-width:450px){.coffee-entry .entry-meta{padding-right:64px;min-height:62px}.author-head-sticker{width:56px;height:56px;right:-2px}}
+
+/* Three depth planes share the existing pointer input: pattern, paper, stickers. */
+.author-head-sticker{transform:none;filter:none;z-index:3}
+.author-head-sticker img{position:absolute;inset:0;width:100%;height:100%;object-fit:contain;image-rendering:pixelated;transition:transform 180ms ease-out}
+.author-head-art{transform:rotate(var(--sticker-angle))}
+.author-head-shadow{opacity:.2;filter:brightness(0) blur(2px);transform:translate(3px,6px) rotate(var(--sticker-angle))}
+@media(hover:hover) and (pointer:fine) and (prefers-reduced-motion:no-preference){
+ .cafe-grid .pour-content{transform:translate(calc(var(--pattern-x,0px)*-.4),calc(var(--pattern-y,0px)*-.4));transition:transform 180ms ease-out}
+ .cafe-grid .coffee-entry{transform:translate(calc(var(--pattern-x,0px)*-.15),calc(var(--pattern-y,0px)*-.15));transition:transform 180ms ease-out}
+ .author-head-art{transform:translate(calc(var(--pattern-x,0px)*.9),calc(var(--pattern-y,0px)*.9)) rotate(var(--sticker-angle))}
+ .author-head-shadow{transform:translate(calc(3px - var(--pattern-x,0px)*.45),calc(6px - var(--pattern-y,0px)*.45)) rotate(var(--sticker-angle))}
+}
+@media(pointer:coarse),(prefers-reduced-motion:reduce){.author-head-sticker img{transition:none}}
