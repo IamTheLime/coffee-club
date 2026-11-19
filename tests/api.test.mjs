@@ -32,19 +32,19 @@ test('should preserve original imported scores and missing facts without duplica
 test('should persist a coffee with a re-encoded protected photo and restrict edits to its persona',async t=>{
  const{call,login,restart}=await fixture(t);const cookie=await login();
  const png=await sharp({create:{width:20,height:20,channels:3,background:'#ac754b'}}).png().toBuffer();
- const review={cafeId:'rosslyn',coffee:"Sam's espresso",score:9,notes:'Chocolate, lovely finish.',milk:'None',visitedOn:'2026-11-19',photo:`data:image/png;base64,${png.toString('base64')}`};
+ const review={cafeId:'rosslyn',coffee:"Sam's espresso",score:8.5,notes:'Chocolate, lovely finish.',milk:'None',visitedOn:'2026-11-19',photo:`data:image/png;base64,${png.toString('base64')}`};
  const created=await call('/api/reviews',{method:'POST',cookie,data:review});assert.equal(created.status,201);const{id}=await created.json();
  const image=await call(`/api/photos/${id}`,{cookie});assert.equal(image.status,200);assert.equal(image.headers.get('cache-control'),'no-store');
  const metadata=await sharp(Buffer.from(await image.arrayBuffer())).metadata();assert.equal(metadata.format,'jpeg');assert.equal(metadata.exif,undefined);
  const sam=await login('Sam');assert.equal((await call(`/api/reviews/${id}`,{method:'PUT',cookie:sam,data:review})).status,403);
- await restart();const entries=await(await call('/api/journal',{cookie})).json();assert.ok(entries.reviews.some(r=>r.id===id&&r.coffee===review.coffee));
+ await restart();const entries=await(await call('/api/journal',{cookie})).json();assert.ok(entries.reviews.some(r=>r.id===id&&r.coffee===review.coffee&&r.score===8.5));
  assert.equal((await call(`/api/reviews/${id}`,{method:'DELETE',cookie})).status,200);
  assert.equal((await call(`/api/photos/${id}`,{cookie})).status,404);
 });
 test('should reject invalid scores, unsafe map links and invalid images without partial records',async t=>{
  const{call,login}=await fixture(t);const cookie=await login();
  const review={cafeName:'New café',coffee:'Flat white',score:8,notes:'Nice',visitedOn:'2026-11-19'};
- for(const patch of [{score:11},{mapsUrl:'javascript:alert(1)'},{photo:'data:image/png;base64,bm90LWFuLWltYWdl'},{visitedOn:'2026-02-31'}])assert.equal((await call('/api/reviews',{method:'POST',cookie,data:{...review,...patch}})).status,400);
+ for(const patch of [{score:11},{score:8.25},{score:"8.5"},{mapsUrl:'javascript:alert(1)'},{photo:'data:image/png;base64,bm90LWFuLWltYWdl'},{visitedOn:'2026-02-31'}])assert.equal((await call('/api/reviews',{method:'POST',cookie,data:{...review,...patch}})).status,400);
  const data=await(await call('/api/journal',{cookie})).json();assert.equal(data.cafes.length,4);assert.equal(data.reviews.length,2);
 });
 test('should revoke access on logout and throttle failed password guesses',async t=>{

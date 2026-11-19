@@ -106,7 +106,7 @@ export function createApp({databasePath,passwordHash,origin,secureCookies=true,s
      const existing=reviewMatch?db.prepare('SELECT * FROM reviews WHERE id=?').get(id):null;
      if(reviewMatch&&(!existing||existing.author!==session.author))throw error(403,'Only the named author can edit this entry.');
      const coffee=text(data.coffee,100,true),notes=text(data.notes||'',4000),milk=text(data.milk||'',50);
-     if(!Number.isInteger(data.score)||data.score<1||data.score>10)throw error(400,'Choose a score from 1 to 10.');
+     if(typeof data.score!=='number'||!Number.isFinite(data.score)||!Number.isInteger(data.score*2)||data.score<1||data.score>10)throw error(400,'Choose a score from 1 to 10 in half-point steps.');
      const visited=text(data.visitedOn,10,true);if(!/^\d{4}-\d{2}-\d{2}$/.test(visited)||!Number.isFinite(Date.parse(visited))||new Date(visited).toISOString().slice(0,10)!==visited)throw error(400,'Choose a valid visit date.');
      const image=data.photo===undefined?(existing?.photo||null):await photo(data.photo);
      let cafeId=data.cafeId;let cafe=cafeId?db.prepare('SELECT id FROM cafes WHERE id=?').get(cafeId):null;
