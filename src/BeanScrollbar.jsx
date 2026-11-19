@@ -19,16 +19,16 @@ function BeanModel({progress}){
  return <span className="scroll-bean-model" ref={host} aria-hidden="true"/>;
 }
 export default function BeanScrollbar({dialog=false}){
- const rail=useRef(),target=useRef();const[state,setState]=useState({progress:0,visible:false,style:{}});
+ const rail=useRef(),target=useRef();const[state,setState]=useState({progress:0,visible:false,interactive:false,style:{}});
  useEffect(()=>{
   const media=matchMedia('(hover: hover) and (pointer: fine)');
   const el=dialog?rail.current.closest('dialog'):document.documentElement;target.current=el;
   const source=dialog?el:window;
-  const update=()=>{const max=el.scrollHeight-el.clientHeight;const rect=el.getBoundingClientRect();setState({progress:max>0?el.scrollTop/max:0,visible:media.matches&&max>1,style:dialog?{top:rect.top+18,right:innerWidth-rect.right+1,height:Math.max(0,rect.height-36)}:{}});el.classList.toggle('bean-scroll-ready',media.matches&&max>1);};
+  const update=()=>{const max=el.scrollHeight-el.clientHeight;const rect=el.getBoundingClientRect();setState({progress:max>0?el.scrollTop/max:0,visible:max>1,interactive:media.matches,style:dialog?{top:rect.top+18,right:innerWidth-rect.right+1,height:Math.max(0,rect.height-36)}:{}});el.classList.toggle('bean-scroll-ready',media.matches&&max>1);};
   const observer=new ResizeObserver(update);observer.observe(el);if(dialog&&el.querySelector('form'))observer.observe(el.querySelector('form'));if(!dialog&&document.querySelector('#root'))observer.observe(document.querySelector('#root'));
   source.addEventListener('scroll',update,{passive:true});window.addEventListener('resize',update);media.addEventListener('change',update);update();
   return()=>{observer.disconnect();source.removeEventListener('scroll',update);window.removeEventListener('resize',update);media.removeEventListener('change',update);el.classList.remove('bean-scroll-ready');};
  },[dialog]);
  const scroll=e=>{const el=target.current;el.scrollTo({top:Number(e.target.value)*(el.scrollHeight-el.clientHeight)/1000,behavior:'instant'});};
- return <div ref={rail} className={'bean-scrollbar '+(dialog?'dialog-scrollbar':'page-scrollbar')} style={{...state.style,display:state.visible?undefined:'none'}}><span className="bean-scroll-line"/><span className="bean-scroll-thumb" style={{top:`calc(${state.progress*100}% - ${state.progress*54}px)`}}>{state.visible&&<BeanModel progress={state.progress}/>}</span><input aria-label={dialog?'Scroll coffee form':'Scroll page'} type="range" min="0" max="1000" step="1" value={Math.round(state.progress*1000)} onChange={scroll} aria-valuetext={`${Math.round(state.progress*100)}% scrolled`} aria-orientation="vertical"/></div>;
+ return <div ref={rail} className={'bean-scrollbar '+(dialog?'dialog-scrollbar':'page-scrollbar')+(state.interactive?'':' mobile-bean-indicator')} style={{...state.style,display:state.visible?undefined:'none'}}><span className="bean-scroll-line"/><span className="bean-scroll-thumb" style={{top:`calc(${state.progress*100}% - ${state.progress*54}px)`}}>{state.visible&&<BeanModel progress={state.progress}/>}</span>{state.interactive&&<input aria-label={dialog?'Scroll coffee form':'Scroll page'} type="range" min="0" max="1000" step="1" value={Math.round(state.progress*1000)} onChange={scroll} aria-valuetext={`${Math.round(state.progress*100)}% scrolled`} aria-orientation="vertical"/>}</div>;
 }

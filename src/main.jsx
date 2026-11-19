@@ -110,6 +110,15 @@ function Cup({dark=false,rust=false}){
 function PourCard({children,enabled,organic=false,restingTilt}){
  const resting=useRef(null);if(resting.current===null)resting.current={angle:restingTilt??(Math.random()-.5)*5,offset:(Math.random()-.5)*12};
  const card=useRef();
+ useEffect(()=>{
+  if(!enabled)return;
+  const el=card.current.parentElement,motion=matchMedia('(prefers-reduced-motion: reduce)'),touch=matchMedia('(pointer: coarse)');let frame=0;
+  const paint=(x,y)=>{const style=card.current.style;style.setProperty('--tilt-x',`${-y*1.3}deg`);style.setProperty('--tilt-y',`${x*1.8}deg`);style.setProperty('--pattern-x',`${x*4}px`);style.setProperty('--pattern-y',`${y*4}px`);style.setProperty('--glint-x',`${50+x*30}%`);style.setProperty('--glint-y',`${50+y*30}%`);};
+  const drag=e=>{if(motion.matches)return;const t=e.touches[0];if(!t)return;const r=el.getBoundingClientRect();paint(Math.max(-1,Math.min(1,(t.clientX-r.left)/r.width*2-1)),Math.max(-1,Math.min(1,(t.clientY-r.top)/r.height*2-1)));};
+  const scroll=()=>{if(!touch.matches||motion.matches||frame)return;frame=requestAnimationFrame(()=>{frame=0;const r=el.getBoundingClientRect();if(r.bottom>0&&r.top<innerHeight)paint(0,Math.max(-1,Math.min(1,(r.top+r.height/2-innerHeight/2)/(innerHeight*.6))));});};
+  el.addEventListener('touchstart',drag,{passive:true});el.addEventListener('touchmove',drag,{passive:true});el.addEventListener('touchend',scroll,{passive:true});window.addEventListener('scroll',scroll,{passive:true});
+  return()=>{cancelAnimationFrame(frame);el.removeEventListener('touchstart',drag);el.removeEventListener('touchmove',drag);el.removeEventListener('touchend',scroll);window.removeEventListener('scroll',scroll);};
+ },[enabled]);
  const move=e=>{
   if(!enabled||e.pointerType!=='mouse'||matchMedia('(prefers-reduced-motion: reduce)').matches)return;
   const box=e.currentTarget.getBoundingClientRect();
