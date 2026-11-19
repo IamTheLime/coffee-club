@@ -60,3 +60,6 @@ Missing maps resolve on journal load and persist in encrypted SQLite. Ambiguous 
 
 ### Small member portraits
 Transparent 24px pixel heads derived with imagegen from the existing full-body characters. Palette reduced to 16 colours, no dithering; displayed statically at native resolution beside review authors, the current member and the hero roster. Original character cards stay unchanged.
+
+### Approved tiny portraits, second pass
+Redrawn with built-in imagegen as genuinely low-detail heads: solid beard for Tiago, glasses/blond eyebrows for Sam, blue eyes for Archie. User approved the actual-size comparison and requested white eye areas while preserving brown/blue pupils. Final transparent PNGs are 24 × 24, exported with nearest-neighbour pixel alignment checked to retain both pupils. No extra facial marks or animations.
