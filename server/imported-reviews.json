@@ -1,0 +1,9 @@
+{
+  "source": "User-pasted Coffee list, 2026-11-19",
+  "cafes": [
+    {"id":"rosslyn","name":"Rosslyn","mapsUrl":"https://maps.app.goo.gl/cL5Yee1BDcEHEL5V7","dateAddedText":"4/7","description":"Small, industrial-style coffee shop with window seating for espresso drinks, tea and baked goods.","reviews":[{"author":"Tiago","score":8,"notes":"Nice deep coffee, without too much acidity. chocolate notes not fruity."}]},
+    {"id":"arome","name":"Arome","mapsUrl":"https://maps.app.goo.gl/o1Ycr9yjJyUE4SBv9","dateAddedText":"5/7","description":"","reviews":[{"author":"Tiago","score":7,"notes":"Good coffee, mild pleasant flavour."}]},
+    {"id":"canal-no-5","name":"Canal No 5","mapsUrl":"https://maps.app.goo.gl/ewBfoKm9oZRWg8s57","dateAddedText":"5/7","description":"","reviews":[]},
+    {"id":"the-roasting-shed","name":"The Roasting shed","mapsUrl":"https://maps.app.goo.gl/xoKwP5bctDymLcmH9","dateAddedText":"5/7","description":"","reviews":[]}
+  ]
+}
